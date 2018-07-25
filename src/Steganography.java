@@ -1,9 +1,12 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 
 public class Steganography {
 	
@@ -26,8 +29,10 @@ public class Steganography {
 		//creating another image with the updated list of bits
 		byte[] newImage = new byte[listImage.size()];
 		for(int i = 0; i < listImage.size();i++) {
-			newImage[i] = Byte.parseByte(listImage.get(i));
+			newImage[i] = Byte.parseByte(listImage.get(i),2);
 		}
+		FileUtils.writeByteArrayToFile(new File("newImage.png"), newImage);
+		
 		
 		
 	}
