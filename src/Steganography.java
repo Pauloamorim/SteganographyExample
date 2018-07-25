@@ -13,7 +13,7 @@ public class Steganography {
 	private static String message = "Test enconding to binary";
 
 	public static void main(String[] args) throws IOException {
-		Path image = Paths.get("download.png");
+		Path image = Paths.get("ASTRO.bmp");
 		byte[] bytes = Files.readAllBytes(image);
 		
 		List<String> listImage = new ArrayList<>();
@@ -31,16 +31,24 @@ public class Steganography {
 		for(int i = 0; i < listImage.size();i++) {
 		
 			String bitRepresentation = listImage.get(i);
+			boolean isNegative = bitRepresentation.charAt(0) == '-';
 														 
-			if(bitRepresentation.charAt(0) == '-' && !bitRepresentation.equals("-10000000")) {
+			if(isNegative && !bitRepresentation.equals("-10000000")) {
 				bitRepresentation = twosComplement(bitRepresentation.replace("-", ""));
 			}
 			//TODO UNDERSTAND WHY WORKS FOR -10000000
 			// -10001001 = -137 -> WHY NOT -119?
 			// -10000000 =  -128
-			newImage[i] = Byte.parseByte(bitRepresentation,2);
+			byte bt = Byte.parseByte(bitRepresentation,2);
+			newImage[i] = isNegative ? (byte)(bt*-1) : bt;
 		}
-		FileUtils.writeByteArrayToFile(new File("newImage.png"), newImage);
+		
+		for (int i = 0; i < newImage.length; i++) {
+			//if(bytes[i] != newImage[i])
+			System.out.println("old: "+bytes[i]+" ---- New: "+newImage[i]);
+		}
+		
+		FileUtils.writeByteArrayToFile(new File("newImage.bmp"), newImage);
 		
 		
 		
