@@ -26,7 +26,16 @@ public class Steganography {
 		//creating another image with the updated list of bits
 		byte[] newImage = new byte[listImage.size()];
 		for(int i = 0; i < listImage.size();i++) {
-			newImage[i] = Byte.parseByte(listImage.get(i));
+		
+			String bitRepresentation = listImage.get(i);
+														 
+			if(bitRepresentation.charAt(0) == '-' && !bitRepresentation.equals("-10000000")) {
+				bitRepresentation = twosComplement(bitRepresentation.replace("-", ""));
+			}
+			//TODO UNDERSTAND WHY WORKS FOR -10000000
+			// -10001001 = -137 -> WHY NOT -119?
+			// -10000000 =  -128
+			newImage[i] = Byte.parseByte(bitRepresentation,2);
 		}
 		
 		
@@ -40,17 +49,13 @@ public class Steganography {
 	 */
 	private static void changeLeastSignificantBits(List<String> listImage, List<Character> listMessage) {
 		int countMessage=0;
-		for (int i = 0; i < listImage.size();i++) {
-			if(countMessage + 1 < listMessage.size()) {
+		for (int i = 0; i < listImage.size() && countMessage + 1 < listMessage.size();i++) {
 				String bits = listImage.get(i);
 				bits = bits.substring(0, bits.length()-2)
 						+listMessage.get(countMessage)
 						+listMessage.get(++countMessage);
 				countMessage++;
 				listImage.set(i,bits);
-			}else {
-				break;
-			}
 		}
 	}
 	/**
@@ -67,12 +72,14 @@ public class Steganography {
 	}
 	/**
 	 * Converting the bytes into a String representation of bits value.
+	 * If the byte is negative add a sign - . So we know we should use 
+	 * decimal from signed 2's complement when recreate the image
 	 * @param bytes
 	 * @param listImage
 	 */
 	private static void convertingBytesOfImageToBits(byte[] bytes, List<String> listImage) {
 		for (byte b : bytes) {
-			 listImage.add(toBitString(b));
+			 listImage.add((b < 0 ? "-" : "")+toBitString(b));
 		}
 	}
 	/**
@@ -83,6 +90,34 @@ public class Steganography {
 	private static String toBitString(final byte val) {
 		return String.format("%8s", Integer.toBinaryString(val & 0xFF))
 	               .replace(' ', '0');
-	}		
+	}	
+	private static String twosComplement(String bin) {
+        String twos = "", ones = "";
+
+        for (int i = 0; i < bin.length(); i++) {
+            ones += flip(bin.charAt(i));
+        }
+        StringBuilder builder = new StringBuilder(ones);
+        boolean b = false;
+        for (int i = ones.length() - 1; i > 0; i--) {
+            if (ones.charAt(i) == '1') {
+                builder.setCharAt(i, '0');
+            } else {
+                builder.setCharAt(i, '1');
+                b = true;
+                break;
+            }
+        }
+        if (!b) {
+        	builder.deleteCharAt(0);
+        	builder.insert(0, "11111111");
+        }
+        twos = builder.toString();
+        return twos;
+    }
+
+    private static char flip(char c) {
+        return (c == '0') ? '1' : '0';
+    }
 	
 }
