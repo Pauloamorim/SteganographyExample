@@ -12,7 +12,7 @@ public class Steganography {
 	
 	private static String message = "Test enconding to binary";
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		Path image = Paths.get("ASTRO.bmp");
 		byte[] bytes = Files.readAllBytes(image);
 		
@@ -43,14 +43,8 @@ public class Steganography {
 			newImage[i] = isNegative ? (byte)(bt*-1) : bt;
 		}
 		
-		for (int i = 0; i < newImage.length; i++) {
-			//if(bytes[i] != newImage[i])
-			System.out.println("old: "+bytes[i]+" ---- New: "+newImage[i]);
-		}
-		
-		FileUtils.writeByteArrayToFile(new File("newImage.bmp"), newImage);
-		
-		
+		File newFile = new File("newFile.bmp");
+		FileUtils.writeByteArrayToFile(newFile, bytes);
 		
 	}
 	/**
@@ -62,7 +56,7 @@ public class Steganography {
 	 */
 	private static void changeLeastSignificantBits(List<String> listImage, List<Character> listMessage) {
 		int countMessage=0;
-		for (int i = 0; i < listImage.size() && countMessage + 1 < listMessage.size();i++) {
+		for (int i = 20; i < listImage.size() && countMessage + 1 < listMessage.size();i++) {
 				String bits = listImage.get(i);
 				bits = bits.substring(0, bits.length()-2)
 						+listMessage.get(countMessage)
