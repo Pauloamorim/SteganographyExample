@@ -1,9 +1,12 @@
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
 
@@ -17,20 +20,38 @@ public class Steganography {
 		checkImageExists(args[0]);
 		checkMessageExists(args[1]);
 		
+		args[0] = convertImageToBmp(args[0]);
+		
 		message = args[1].concat("\\q");
 		byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
-		putHiddenMessageInImage(bytes);
+		putHiddenMessageInImage(bytes,args[2]);
 		extractHiddenMessageInImage();
-
+		
+		//Make sure I'll delete the converted file, I don't need anymore.
+		File file = new File("newImageConverted.bmp");
+		if(file.exists()) {
+			file.delete();
+		}	
 	}
 
-	private static void checkImageExists(String pathFile) {
+	private static void checkImageExists(String pathFile) throws IOException {
 		if(pathFile == null || 
-				!"bmp".equals(pathFile.substring(pathFile.length()-3, pathFile.length())) || 
 				!new File(pathFile).exists()) {
 			throw new IllegalArgumentException("Invalid image");
 		}
 	}
+	private static String convertImageToBmp(String pathFile) throws IOException {
+		if(!"bmp".equals(pathFile.substring(pathFile.length()-3, pathFile.length()))) {
+			File f = new File(pathFile);
+			BufferedImage bf = ImageIO.read(f);
+			File output = new File("newImageConverted.bmp");
+			ImageIO.write(bf, "bmp", output);
+			return "newImageConverted.bmp";
+		}
+		return pathFile;
+		
+	}
+
 	private static void checkMessageExists(String message) {
 		if(message == null || "".equals(message)) {
 			throw new IllegalArgumentException("Invalid message");
@@ -77,9 +98,10 @@ public class Steganography {
 	 * TODO MAP ALL STEPS TO PUT THE IMAGE
 	 * 
 	 * @param bytes
+	 * @param pathOutputFile 
 	 * @throws IOException
 	 */
-	private static void putHiddenMessageInImage(byte[] bytes) throws IOException {
+	private static void putHiddenMessageInImage(byte[] bytes, String pathOutputFile) throws IOException {
 		List<String> listImage = new ArrayList<>();
 		List<Character> listMessage = new ArrayList<>();
 
@@ -106,7 +128,7 @@ public class Steganography {
 			newImage[i] = isNegative ? (byte) (bt * -1) : bt;
 		}
 		// Write the new file with the message hidden
-		File newFile = new File("newFile.bmp");
+		File newFile = new File(pathOutputFile.concat("outputFile.bmp"));
 		FileUtils.writeByteArrayToFile(newFile, newImage);
 	}
 
