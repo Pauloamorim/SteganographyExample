@@ -99,7 +99,7 @@ public class Steganography {
 		List<Byte> bytes = new ArrayList<>();
 		String temp = "";
 		
-		File decoded = new File("decodedFile".concat(extensionFileHide));
+		File decoded = new File("decodedFile.".concat(extensionFileHide));
 
 		// Hidden message start at index 20
 		for (int i = POSITION_START_CHANGE_BYTES; i < listNewImageBits.size(); i++) {
@@ -108,7 +108,14 @@ public class Steganography {
 				temp += getTwoLeastSignificantBits(listNewImageBits.get(i), temp);
 			} else {
 				// converting the 8 bits representation to a Character and append in String
-				bytes.add(Byte.parseByte(temp, 2));
+				
+				Integer a = Integer.parseInt(temp,2);
+				if(Byte.MIN_VALUE < a || a > Byte.MAX_VALUE) {
+					a = Integer.parseInt(twosComplement(temp),2);
+				}
+				
+				
+				bytes.add(a.byteValue());
 
 				// Check when the algorithm should stop to look for the message, in this case
 				// when found the sequence \q
