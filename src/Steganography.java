@@ -3,26 +3,42 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 public class Steganography {
 
 	private static final int POSITION_START_CHANGE_BYTES = 150;
-	private static String message; 
+	
+	private static byte[] informationToHide;
+	private static boolean isFileToHide;
+	private static String extensionFileHide;
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		
 		checkImageExists(args[0]);
 		checkMessageExists(args[1]);
+		checkOutputForTheNewImage(args);
 		
 		args[0] = convertImageToBmp(args[0]);
 		
-		message = args[1].concat("\\q");
+		if(new File(args[1]).exists()){
+			informationToHide = Files.readAllBytes(Paths.get(args[1]));
+			isFileToHide = true; 
+			extensionFileHide = FilenameUtils.getExtension(args[1]); 
+		}else {
+			informationToHide = args[1].getBytes();
+			isFileToHide = false;
+		}
+		
+		
 		byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
 		putHiddenMessageInImage(bytes,args[2]);
 		extractHiddenMessageInImage();
@@ -32,6 +48,12 @@ public class Steganography {
 		if(file.exists()) {
 			file.delete();
 		}	
+	}
+
+	private static void checkOutputForTheNewImage(String[] args) {
+		if(args.length == 2 || args[2] == null || "".equals(args[2])) {
+			throw new IllegalArgumentException("Please provide a valid folder to output image");
+		}
 	}
 
 	private static void checkImageExists(String pathFile) throws IOException {
@@ -66,7 +88,52 @@ public class Steganography {
 		for (byte b : byteswithHidden) {
 			listNewImageBits.add((b < 0 ? "-" : "") + toBitString(b));
 		}
+		if(!isFileToHide) {
+			decodeTextMessage(listNewImageBits);
+		}else {
+			decodeFileHidden(listNewImageBits);
+		}
+	}
+	
+	private static void decodeFileHidden(List<String> listNewImageBits) throws IOException {
+		List<Byte> bytes = new ArrayList<>();
+		String temp = "";
+		
+		File decoded = new File("decodedFile".concat(extensionFileHide));
 
+		// Hidden message start at index 20
+		for (int i = POSITION_START_CHANGE_BYTES; i < listNewImageBits.size(); i++) {
+
+			if (temp.length() == 0 || temp.length() % 8 != 0) {
+				temp += getTwoLeastSignificantBits(listNewImageBits.get(i), temp);
+			} else {
+				// converting the 8 bits representation to a Character and append in String
+				bytes.add(Byte.parseByte(temp, 2));
+
+				// Check when the algorithm should stop to look for the message, in this case
+				// when found the sequence \q
+				if (bytes.size() >= 2 && bytes.get(bytes.size()-2) == 92 && bytes.get(bytes.size()-2) == 113) {
+					bytes.remove(bytes.size()-1);
+					bytes.remove(bytes.size()-1);
+					
+					//TODO improve that
+					byte[] byteArr = new byte[bytes.size()];
+					for(int j = 0; i < bytes.size();i++) {
+						byteArr[j] = bytes.get(j);
+					}
+					
+					FileUtils.writeByteArrayToFile(decoded, byteArr);
+					break;
+				}
+
+				temp = "";
+				temp += getTwoLeastSignificantBits(listNewImageBits.get(i), temp);
+
+			}
+		}
+	}
+
+	private static void decodeTextMessage(List<String> listNewImageBits) {
 		String message = "";
 		String temp = "";
 
@@ -105,7 +172,6 @@ public class Steganography {
 		List<String> listImage = new ArrayList<>();
 		List<Character> listMessage = new ArrayList<>();
 
-		// adding \q to know where I should stop on decoding
 
 		convertingBytesOfImageToBits(bytes, listImage);
 		convertingMessageToListOfCharacter(listMessage);
@@ -170,11 +236,14 @@ public class Steganography {
 	 * @param listMessage
 	 */
 	private static void convertingMessageToListOfCharacter(List<Character> listMessage) {
-		for (byte b : message.getBytes()) {
+		for (byte b : informationToHide) {
 			for (char c : toBitString(b).toCharArray()) {
 				listMessage.add(c);
 			}
 		}
+		// \q as quit identifier
+		String quitIdentifier = "0101110001110001";
+		quitIdentifier.chars().forEach(obj -> listMessage.add(new Character((char)obj)));
 	}
 
 	/**
