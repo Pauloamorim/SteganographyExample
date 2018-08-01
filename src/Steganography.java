@@ -39,7 +39,7 @@ public class Steganography {
 		
 		byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
 		putHiddenMessageInImage(bytes,args[2]);
-		extractHiddenMessageInImage();
+		extractHiddenMessageInImage(args[2]);
 		
 		//Make sure I'll delete the converted file, I don't need anymore.
 		File file = new File("newImageConverted.bmp");
@@ -78,8 +78,8 @@ public class Steganography {
 		}
 	}
 
-	private static void extractHiddenMessageInImage() throws IOException {
-		byte[] byteswithHidden = Files.readAllBytes(Paths.get("newFile.bmp"));
+	private static void extractHiddenMessageInImage(String pathOutputFile) throws IOException {
+		byte[] byteswithHidden = Files.readAllBytes(Paths.get(pathOutputFile.concat("outputFile.bmp")));
 
 		// Converting new image to BIT representation
 		List<String> listNewImageBits = new ArrayList<>();
@@ -97,6 +97,7 @@ public class Steganography {
 		List<Byte> bytes = new ArrayList<>();
 		String temp = "";
 		
+		//TODO CHANGE PATH OF DECODED FILE
 		File decoded = new File("decodedFile.".concat(extensionFileHide));
 
 		// Hidden message start at index 20
@@ -105,16 +106,16 @@ public class Steganography {
 			if (temp.length() == 0 || temp.length() % 8 != 0) {
 				temp += getTwoLeastSignificantBits(listNewImageBits.get(i), temp);
 			} else {
-				// converting the 8 bits representation to a Character and append in String
 				
+				//TODO NOT SURE IF THIS IS A GOOD APPROACH, PLEASE FIND ANOTHER WAY.
 				Integer a = Integer.parseInt(temp,2);
 				if(Byte.MIN_VALUE > a || a > Byte.MAX_VALUE) {
 					a = Integer.parseInt(twosComplement(temp),2);
-				}
-				
-				
+				}				
 				bytes.add(a.byteValue());
 				System.out.println(a.byteValue());
+				
+				
 
 				// Check when the algorithm should stop to look for the message, in this case
 				// when found the sequence \q
@@ -128,6 +129,8 @@ public class Steganography {
 						byteArr[j] = bytes.get(j);
 					}
 					
+					
+					//TODO THE PROGRAM IS ABLE TO ENCODE TXT FILES, BUT WHEN I TRY TO ENCODE IMAGE, THE OUTPUT IS A CORRUPTED IMAGE
 					FileUtils.writeByteArrayToFile(decoded, byteArr);
 					break;
 				}
