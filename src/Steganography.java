@@ -3,9 +3,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.temporal.IsoFields;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -110,22 +108,23 @@ public class Steganography {
 				// converting the 8 bits representation to a Character and append in String
 				
 				Integer a = Integer.parseInt(temp,2);
-				if(Byte.MIN_VALUE < a || a > Byte.MAX_VALUE) {
+				if(Byte.MIN_VALUE > a || a > Byte.MAX_VALUE) {
 					a = Integer.parseInt(twosComplement(temp),2);
 				}
 				
 				
 				bytes.add(a.byteValue());
+				System.out.println(a.byteValue());
 
 				// Check when the algorithm should stop to look for the message, in this case
 				// when found the sequence \q
-				if (bytes.size() >= 2 && bytes.get(bytes.size()-2) == 92 && bytes.get(bytes.size()-2) == 113) {
+				if (bytes.size() >= 2 && bytes.get(bytes.size()-2) == 92 && bytes.get(bytes.size()-1) == 113) {
 					bytes.remove(bytes.size()-1);
 					bytes.remove(bytes.size()-1);
 					
 					//TODO improve that
 					byte[] byteArr = new byte[bytes.size()];
-					for(int j = 0; i < bytes.size();i++) {
+					for(int j = 0; j < bytes.size();j++) {
 						byteArr[j] = bytes.get(j);
 					}
 					
