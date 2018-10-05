@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
+
 public class Steganography {
 
 	private static final int POSITION_START_CHANGE_BYTES = 150;
@@ -19,7 +20,7 @@ public class Steganography {
 	private static boolean isFileToHide;
 	private static String extensionFileHide;
 
-	public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException {
 		
 		checkImageExists(args[0]);
 		checkMessageExists(args[1]);
@@ -42,10 +43,7 @@ public class Steganography {
 		extractHiddenMessageInImage(args[2]);
 		
 		//Make sure I'll delete the converted file, I don't need anymore.
-		File file = new File("newImageConverted.bmp");
-		if(file.exists()) {
-			file.delete();
-		}	
+		new File("newImageConverted.bmp").delete();
 	}
 
 	private static void checkOutputForTheNewImage(String[] args) {
@@ -54,7 +52,7 @@ public class Steganography {
 		}
 	}
 
-	private static void checkImageExists(String pathFile) throws IOException {
+	private static void checkImageExists(String pathFile)  {
 		if(pathFile == null || 
 				!new File(pathFile).exists()) {
 			throw new IllegalArgumentException("Invalid image");
@@ -113,7 +111,7 @@ public class Steganography {
 					a = Integer.parseInt(twosComplement(temp),2);
 				}				
 				bytes.add(a.byteValue());
-				System.out.println(a.byteValue());
+				//System.out.println(a.byteValue());
 				
 				
 
