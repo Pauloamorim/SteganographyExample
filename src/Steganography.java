@@ -2,6 +2,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,30 +21,43 @@ public class Steganography {
 	private static boolean isFileToHide;
 	private static String extensionFileHide;
 
+	/**
+	 * 
+	 * @param args[0] Image to encrypt message
+	 * @param args[1] Message to encode
+	 * @param args[2] Path to 
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		
-		checkImageExists(args[0]);
-		checkMessageExists(args[1]);
+		String pathFileImage = args[0];
+		String messageToEncrypt = args[1];
+		String pathOutputFile = args[2];
+
+		checkImageExists(pathFileImage);
+		checkMessageExists(messageToEncrypt);
 		checkOutputForTheNewImage(args);
 		
-		args[0] = convertImageToBmp(args[0]);
+		//convert image to BMP, easier to read
+		pathFileImage = convertImageToBmp(pathFileImage);
 		
-		if(new File(args[1]).exists()){
-			informationToHide = Files.readAllBytes(Paths.get(args[1]));
+		//check if user passed just a message or a file
+		if(new File(messageToEncrypt).exists()){
+			informationToHide = Files.readAllBytes(Paths.get(messageToEncrypt));
 			isFileToHide = true; 
-			extensionFileHide = FilenameUtils.getExtension(args[1]); 
+			extensionFileHide = FilenameUtils.getExtension(messageToEncrypt); 
 		}else {
-			informationToHide = args[1].getBytes();
+			informationToHide = messageToEncrypt.getBytes();
 			isFileToHide = false;
 		}
 		
 		
-		byte[] bytes = Files.readAllBytes(Paths.get(args[0]));
-		putHiddenMessageInImage(bytes,args[2]);
-		extractHiddenMessageInImage(args[2]);
+		byte[] bytes = Files.readAllBytes(Paths.get(pathFileImage));
+		putHiddenMessageInImage(bytes,pathOutputFile);
+		extractHiddenMessageInImage(pathOutputFile);
 		
 		//Make sure I'll delete the converted file, I don't need anymore.
-		new File("newImageConverted.bmp").delete();
+		Files.delete(Paths.get("newImageConverted.bmp"));
 	}
 
 	private static void checkOutputForTheNewImage(String[] args) {
@@ -85,7 +99,7 @@ public class Steganography {
 			listNewImageBits.add((b < 0 ? "-" : "") + toBitString(b));
 		}
 		if(!isFileToHide) {
-			decodeTextMessage(listNewImageBits);
+			decodeTextMessage(listNewImageBits,pathOutputFile);
 		}else {
 			decodeFileHidden(listNewImageBits);
 		}
@@ -140,9 +154,10 @@ public class Steganography {
 		}
 	}
 
-	private static void decodeTextMessage(List<String> listNewImageBits) {
+	private static void decodeTextMessage(List<String> listNewImageBits, String pathOutputFile) {
 		String message = "";
 		String temp = "";
+		File textDecoded = new File(pathOutputFile+"decoded.txt");
 
 		// Hidden message start at index 20
 		for (int i = POSITION_START_CHANGE_BYTES; i < listNewImageBits.size(); i++) {
@@ -156,7 +171,12 @@ public class Steganography {
 				// Check when the algorithm should stop to look for the message, in this case
 				// when found the sequence \q
 				if (message.length() >= 2 && message.substring(message.length() - 2, message.length()).equals("\\q")) {
-					System.out.println(message.substring(0, message.length() - 2));
+					String txt = message.substring(0, message.length() - 2);
+					try {
+						FileUtils.writeByteArrayToFile(textDecoded, txt.getBytes(), true);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 					break;
 				}
 
@@ -178,7 +198,6 @@ public class Steganography {
 	private static void putHiddenMessageInImage(byte[] bytes, String pathOutputFile) throws IOException {
 		List<String> listImage = new ArrayList<>();
 		List<Character> listMessage = new ArrayList<>();
-
 
 		convertingBytesOfImageToBits(bytes, listImage);
 		convertingMessageToListOfCharacter(listMessage);
