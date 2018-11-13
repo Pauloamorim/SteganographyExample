@@ -16,6 +16,8 @@ import org.apache.commons.io.FilenameUtils;
 public class Steganography {
 
 	private static final int POSITION_START_CHANGE_BYTES = 150;
+	private static final String ENCODE = "e";
+	private static final String DECODE = "d";
 	
 	private static byte[] informationToHide;
 	private static boolean isFileToHide;
@@ -30,9 +32,30 @@ public class Steganography {
 	 */
 	public static void main(String[] args) throws IOException {
 		
-		String pathFileImage = args[0];
-		String messageToEncrypt = args[1];
-		String pathOutputFile = args[2];
+		String option = args[0];
+		switch (option) {
+		case ENCODE:
+			encodeImage(args);
+			break;
+		case DECODE:
+			decodeImage(args);
+			break;
+		default:
+			break;
+		}
+		
+	}
+
+	private static void decodeImage(String[] args) throws IOException {
+		String pathOutputFile = args[1];
+		String pathImageWithInformation = args[2];
+		extractHiddenMessageInImage(pathOutputFile,pathImageWithInformation);
+	}
+
+	private static void encodeImage(String[] args) throws IOException {
+		String pathFileImage = args[1];
+		String messageToEncrypt = args[2];
+		String pathOutputFile = args[3];
 
 		checkImageExists(pathFileImage);
 		checkMessageExists(messageToEncrypt);
@@ -54,14 +77,13 @@ public class Steganography {
 		
 		byte[] bytes = Files.readAllBytes(Paths.get(pathFileImage));
 		putHiddenMessageInImage(bytes,pathOutputFile);
-		extractHiddenMessageInImage(pathOutputFile);
 		
 		//Make sure I'll delete the converted file, I don't need anymore.
 		Files.delete(Paths.get("newImageConverted.bmp"));
 	}
 
 	private static void checkOutputForTheNewImage(String[] args) {
-		if(args.length == 2 || args[2] == null || "".equals(args[2])) {
+		if(args.length == 3 || args[3] == null || "".equals(args[3])) {
 			throw new IllegalArgumentException("Please provide a valid folder to output image");
 		}
 	}
@@ -90,8 +112,8 @@ public class Steganography {
 		}
 	}
 
-	private static void extractHiddenMessageInImage(String pathOutputFile) throws IOException {
-		byte[] byteswithHidden = Files.readAllBytes(Paths.get(pathOutputFile.concat("outputFile.bmp")));
+	private static void extractHiddenMessageInImage(String pathOutputFile,String pathImageWithInformation) throws IOException {
+		byte[] byteswithHidden = Files.readAllBytes(Paths.get(pathImageWithInformation));
 
 		// Converting new image to BIT representation
 		List<String> listNewImageBits = new ArrayList<>();
