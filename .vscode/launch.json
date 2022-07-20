@@ -1,0 +1,31 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Encode Steganography",
+            "request": "launch",
+            "mainClass": "com.paulo.steganography.Steganography",
+            "projectName": "Steganography",
+            "args": ["e", "~/Pictures/Steganography/horizon.jpeg", "~/Desktop/audioJaque.mp3", "~/Desktop/"]
+        },
+        {
+            "type": "java",
+            "name": "Launch Decode Steganography",
+            "request": "launch",
+            "mainClass": "com.paulo.steganography.Steganography",
+            "projectName": "Steganography",
+            "args": ["d", "~/Downloads/_horizon(1).jpeg", "~/Desktop/"]
+        }
+    ]
+}
