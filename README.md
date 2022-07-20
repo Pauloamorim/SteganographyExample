@@ -14,7 +14,7 @@ This is the new image with an another image hidden inside!
 - Mario image that it's hidden
 - ![decoded](https://user-images.githubusercontent.com/7330132/180094678-c9e2eaa2-49d9-4b76-94eb-4f366cce9058.jpeg)
 
-## Tested types of file that are working
+## Tested types of file to be hidden inside the JPEG Image that are working
 - [x] pdf
 - [x] txt
 - [x] mp3
